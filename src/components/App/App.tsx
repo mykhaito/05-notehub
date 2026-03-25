@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
 import css from "./App.module.css";
 import SearchBox from "../SearchBox/SearchBox";
@@ -9,12 +9,7 @@ import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
-import {
-  createNote,
-  deleteNote,
-  fetchNotes,
-  type CreateNotePayload,
-} from "../../services/noteService";
+import { fetchNotes } from "../../services/noteService";
 
 const PER_PAGE = 12;
 
@@ -23,8 +18,6 @@ export default function App() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const queryClient = useQueryClient();
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearch(value);
@@ -48,30 +41,6 @@ export default function App() {
       }),
     placeholderData: keepPreviousData,
   });
-
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateNotePayload) => createNote(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-      setPage(1);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
-
-  const handleCreateNote = async (values: CreateNotePayload) => {
-    await createMutation.mutateAsync(values);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    deleteMutation.mutate(id);
-  };
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -102,13 +71,11 @@ export default function App() {
 
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {!isLoading && !isError && notes.length > 0 && (
-        <NoteList notes={notes} onDelete={handleDeleteNote} />
-      )}
+      {!isLoading && !isError && notes.length > 0 && <NoteList notes={notes} />}
 
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <NoteForm onSubmit={handleCreateNote} onCancel={closeModal} />
+          <NoteForm onCancel={closeModal} onSuccess={closeModal} />
         </Modal>
       )}
     </div>
