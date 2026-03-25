@@ -33,8 +33,8 @@ const validationSchema = Yup.object({
 });
 
 export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
-  const handleSubmit = (values: NoteFormValues) => {
-    onSubmit(values);
+  const handleSubmit = async (values: NoteFormValues) => {
+    await onSubmit(values);
   };
 
   return (

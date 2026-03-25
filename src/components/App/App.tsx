@@ -65,8 +65,8 @@ export default function App() {
     },
   });
 
-  const handleCreateNote = (values: CreateNotePayload) => {
-    createMutation.mutate(values);
+  const handleCreateNote = async (values: CreateNotePayload) => {
+    await createMutation.mutateAsync(values);
   };
 
   const handleDeleteNote = (id: string) => {
